@@ -14,8 +14,10 @@
 
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 
 def generate_launch_description():
 
@@ -25,7 +27,7 @@ def generate_launch_description():
             " ",
             PathJoinSubstitution(
                 [
-                    FindPackageShare("hoverboard_demo_description"), "urdf", "hoverboard_description.xacro"
+                    FindPackageShare("hoverboard_demo_description"), "urdf/robots", "2wd.urdf.xacro"
                 ]
             ),
         ]
@@ -81,6 +83,7 @@ def generate_launch_description():
         package="rviz2",
         executable="rviz2",
         name="rviz2",
+        condition=IfCondition(LaunchConfiguration('use_rviz')),
         arguments=["-d", rviz_config_file],
     )
 
@@ -103,6 +106,9 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'use_rviz', default_value='false', description='Whether to start RViz'
+        ),
         control_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
